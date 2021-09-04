@@ -9,12 +9,12 @@
 # See: https://theme-next.js.org/docs/theme-settings/
 # ---------------------------------------------------------------
 
-# Allow to cache content generation. Introduced in NexT v6.0.0.
+# Allow to cache content generation.
 cache:
   enable: true
 
 # Remove unnecessary files after hexo generate.
-minify: false
+minify: true
 
 # Define custom file paths.
 # Create your custom files in site directory `source/_data` and uncomment needed files below.
@@ -37,9 +37,9 @@ custom_file_path:
 
 # Schemes
 # scheme: Muse
-# scheme: Mist
-# scheme: Pisces
-scheme: Gemini
+#scheme: Mist
+scheme: Pisces
+#scheme: Gemini
 
 # Dark Mode
 darkmode: false
@@ -52,23 +52,24 @@ darkmode: false
 favicon:
   small: /images/favicon-16x16-next.png
   medium: /images/favicon-32x32-next.png
-  apple_touch_icon: /images/apple-touch-icon-next.png
-  safari_pinned_tab: /images/logo.svg
-  #android_manifest: /images/manifest.json
-  #ms_browserconfig: /images/browserconfig.xml
+  apple_touch_icon: /images/favicon-32x32-next.png
+  safari_pinned_tab: /images/favicon-32x32-next.png
+  #android_manifest: /manifest.json
 
 # Custom Logo (Warning: Do not support scheme Mist)
 custom_logo: #/uploads/custom-logo.jpg
 
 # Creative Commons 4.0 International License.
-# See: https://creativecommons.org/share-your-work/licensing-types-examples
-# Available values of license: by | by-nc | by-nc-nd | by-nc-sa | by-nd | by-sa | zero
-# You can set a language value if you prefer a translated version of CC license, e.g. deed.zh
-# CC licenses are available in 39 languages, you can find the specific and correct abbreviation you need on https://creativecommons.org
+# See: https://creativecommons.org/about/cclicenses/
 creative_commons:
+  # Available values: by | by-nc | by-nc-nd | by-nc-sa | by-nd | by-sa | cc-zero
   license: by-nc-sa
+  # Available values: big | small
+  size: small
   sidebar: false
   post: false
+  # You can set a language value if you prefer a translated version of CC license, e.g. deed.zh
+  # CC licenses are available in 39 languages, you can find the specific and correct abbreviation you need on https://creativecommons.org
   language:
 
 
@@ -82,18 +83,18 @@ creative_commons:
 # External url should start with http:// or https://
 menu:
   home: / || fa fa-home
-  about: /about/ || fa fa-user
+  archives: /archives/ || fa fa-archive
   tags: /tags/ || fa fa-tags
   categories: /categories/ || fa fa-th
-  archives: /archives/ || fa fa-archive
+  about: /about/ || fa fa-user
   #schedule: /schedule/ || fa fa-calendar
   #sitemap: /sitemap.xml || fa fa-sitemap
-  commonweal: /404/ || fa fa-heartbeat
+  #commonweal: /404/ || fa fa-heartbeat
 
 # Enable / Disable menu icons / item badges.
 menu_settings:
   icons: true
-  badges: false
+  badges: true
 
 
 # ---------------------------------------------------------------
@@ -124,10 +125,9 @@ sidebar:
   offset: 12
 
 # Sidebar Avatar
-# 头像
 avatar:
   # Replace the default image and set the url here.
-  url: https://xhp281-blog.oss-cn-beijing.aliyuncs.com/blog_config/zoro.png
+  url: https://xhp281-blog.oss-cn-beijing.aliyuncs.com/blog_config/zoro_h_02.jpeg
   # If true, the avatar will be dispalyed in circle.
   rounded: true
   # If true, the avatar will be rotated with the cursor.
@@ -141,8 +141,8 @@ site_state: true
 # Key is the link label showing to end users.
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
-  GitHub: https://github.com/yourname || fab fa-github
-  # E-Mail: mailto:yourname@gmail.com || fa fa-envelope
+  #GitHub: https://github.com/yourname || fab fa-github
+  E-Mail: mailto:xhp281@gmail.com || fa fa-envelope
   #Weibo: https://weibo.com/yourname || fab fa-weibo
   #Google: https://plus.google.com/yourname || fab fa-google
   #Twitter: https://twitter.com/yourname || fab fa-twitter
@@ -154,8 +154,8 @@ social:
 
 social_icons:
   enable: true
-  icons_only: false
-  transition: false
+  icons_only: true
+  transition: true
 
 # Blog rolls
 links_settings:
@@ -180,15 +180,6 @@ toc:
   # Maximum heading depth of generated toc.
   max_depth: 6
 
-# A button to open designated chat widget in sidebar.
-# Firstly, you need enable the chat service you want to activate its sidebar button.
-chat:
-  enable: false
-  #service: chatra
-  #service: tidio
-  icon: fa fa-comment # Icon name in Font Awesome, set false to disable icon.
-  text: Chat # Button text, change it as you wish.
-
 
 # ---------------------------------------------------------------
 # Footer Settings
@@ -199,13 +190,13 @@ chat:
 language_switcher: false
 
 footer:
-  # Specify the date when the site was setup. If not defined, current year will be used.
-  #since: 2015
+  # Specify the year when the site was setup. If not defined, current year will be used.
+  since: 2020
 
   # Icon between year and copyright info.
   icon:
     # Icon name in Font Awesome. See: https://fontawesome.com/icons
-    name: fa fa-heartbeat
+    name: fa fa-heart
     # If you want to animate the icon, set it to true.
     animated: true
     # Change the color of icon, using Hex Code.
@@ -242,13 +233,12 @@ excerpt_description: true
 read_more_btn: true
 
 # Post meta display settings
-# 发布设置
 post_meta:
   item_text: true
   created_at: true
   updated_at:
-    enable: false
-    another_day: false
+    enable: true
+    another_day: 
   categories: true
 
 # Post wordcount display settings
@@ -258,7 +248,7 @@ symbols_count_time:
   item_text_total: false
 
 # Use icon instead of the symbol # to indicate the tag at the bottom of the post
-tag_icon: false
+tag_icon: true
 
 # Donate (Sponsor) settings
 # Front-matter variable (unsupport animation).
@@ -285,9 +275,9 @@ follow_me:
 # Related popular posts
 # Dependencies: https://github.com/tea3/hexo-related-popular-posts
 related_posts:
-  enable: true
+  enable: false
   title: # Custom header, leave empty to use the default one
-  display_in_home: true
+  display_in_home: false
   params:
     maxCount: 5
     #PPMixingRate: 0.0
@@ -339,8 +329,11 @@ calendar:
 # See: https://theme-next.js.org/docs/theme-settings/miscellaneous
 # ---------------------------------------------------------------
 
+# Preconnect CDN for fonts and plugins.
+# For more information: https://www.w3.org/TR/resource-hints/#preconnect
+preconnect: true
+
 # Set the text alignment in posts / pages.
-# 对齐方式
 text_align:
   # Available values: start | end | left | right | center | justify | justify-all | match-parent
   desktop: justify
@@ -352,21 +345,27 @@ mobile_layout_economy: true
 # Android Chrome header panel color ($brand-bg / $headband-bg => $black-deep).
 android_chrome_color: "#222"
 
-# 代码块
+# Override browsers' default behavior.
+body_scrollbar:
+  # Place the scrollbar over the content.
+  overlay: false
+  # Present the scrollbar even if the content is not overflowing.
+  stable: false
+
 codeblock:
   # Code Highlight theme
   # All available themes: https://theme-next.js.org/highlight/
   theme:
-    light: default
-    dark: tomorrow-night
-  prism:
-    light: prism
-    dark: prism-dark
+    light: solarized-dark
+    dark: solarized-dark
+  # prism:
+  #   light: prism-solarizedlight
+  #   dark: prism-solarizedlight
   # Add copy button on codeblock
   copy_button:
     enable: true
     # Available values: default | flat | mac
-    style: flat
+    style: mac
 
 back2top:
   enable: true
@@ -377,15 +376,18 @@ back2top:
 
 # Reading progress bar
 reading_progress:
-  enable: true
+  enable: false
+  # Available values: left | right
+  start_at: left
   # Available values: top | bottom
-  position: top
+  position: bottom
+  reversed: false
   color: "#37c6c0"
   height: 3px
 
 # Bookmark Support
 bookmark:
-  enable: false
+  enable: true
   # Customize the color of the bookmark.
   color: "#222"
   # If auto, save the reading progress when closing the page or clicking the bookmark-icon.
@@ -407,7 +409,7 @@ github_banner:
 #   light | light italic | normal | normal italic | bold | bold italic
 # Be aware that setting too much fonts will cause site running slowly
 # ---------------------------------------------------------------
-# To avoid space between header and sidebar in scheme Pisces / Gemini, Web Safe fonts are recommended for `global` (and `title`):
+# Web Safe fonts are recommended for `global` (and `title`):
 # Arial | Tahoma | Helvetica | Times New Roman | Courier New | Verdana | Georgia | Palatino | Garamond | Comic Sans MS | Trebuchet MS
 # ---------------------------------------------------------------
 
@@ -456,23 +458,21 @@ font:
 # See: https://theme-next.js.org/docs/theme-settings/seo
 # ---------------------------------------------------------------
 
-# Disable Baidu transformation on mobile devices.
-disable_baidu_transformation: true
-
 # If true, site-subtitle will be added to index page.
 # Remember to set up your site-subtitle in Hexo `_config.yml` (e.g. subtitle: Subtitle)
 index_with_subtitle: true
 
 # Automatically add external URL with Base64 encrypt & decrypt.
 exturl: false
+# If true, an icon will be attached to each external URL
+exturl_icon: true
 
 # Google Webmaster tools verification.
-# See: https://www.google.com/webmasters
-google_site_verification:
-
+# See: https://developers.google.com/search
+google_site_verification: vL3EGzFZkG5EXIacMCDRxvYS85228CXfTWdQQp_Nvgo
 # Bing Webmaster tools verification.
-# See: https://www.bing.com/webmaster
-bing_site_verification:
+# See: https://www.bing.com/webmasters
+bing_site_verification: code-j7XwhMNr0I
 
 # Yandex Webmaster tools verification.
 # See: https://webmaster.yandex.ru
@@ -481,9 +481,6 @@ yandex_site_verification:
 # Baidu Webmaster tools verification.
 # See: https://ziyuan.baidu.com/site
 baidu_site_verification:
-
-# Enable baidu push so that the blog will push the url to baidu automatically which is very helpful for SEO.
-baidu_push: false
 
 
 # ---------------------------------------------------------------
@@ -505,6 +502,8 @@ math:
 
   mathjax:
     enable: false
+    # Available values: none | ams | all
+    tags: none
 
   katex:
     enable: false
@@ -513,19 +512,19 @@ math:
 
 # Easily enable fast Ajax navigation on your website.
 # For more information: https://github.com/next-theme/pjax
-pjax: true
+pjax: false
 
 # FancyBox is a tool that offers a nice and elegant way to add zooming functionality for images.
-# For more information: https://fancyapps.com/fancybox
-fancybox: true
+# For more information: https://fancyapps.com/fancybox/
+fancybox: false
 
 # A JavaScript library for zooming images like Medium.
 # Warning: Do not enable both `fancybox` and `mediumzoom`.
-# For more information: https://github.com/francoischalifour/medium-zoom
-mediumzoom: true
+# For more information: https://medium-zoom.francoischalifour.com
+mediumzoom: false
 
 # Vanilla JavaScript plugin for lazyloading images.
-# For more information: https://github.com/ApoorvSaxena/lozad.js
+# For more information: https://apoorv.pro/lozad.js/demo/
 lazyload: false
 
 # Pangu Support
@@ -534,7 +533,7 @@ lazyload: false
 pangu: false
 
 # Quicklink Support
-# For more information: https://github.com/GoogleChromeLabs/quicklink
+# For more information: https://getquick.link
 # Front-matter variable (unsupport home archive).
 quicklink:
   enable: false
@@ -551,10 +550,6 @@ quicklink:
   # Default (true) will attempt to use the fetch() API if supported (rather than link[rel=prefetch]).
   priority: true
 
-  # For more flexibility you can add some patterns (RegExp, Function, or Array) to ignores.
-  # See: https://github.com/GoogleChromeLabs/quicklink#custom-ignore-patterns
-  ignores:
-
 
 # ---------------------------------------------------------------
 # Comments Settings
@@ -566,7 +561,7 @@ comments:
   # Available values: tabs | buttons
   style: tabs
   # Choose a comment system to be displayed by default.
-  # Available values: changyan | disqus | disqusjs | gitalk | livere | valine
+  # Available values: disqus | disqusjs | changyan | livere | gitalk | utterances
   active:
   # Setting `true` means remembering the comment system selected by the visitor.
   storage: true
@@ -581,18 +576,17 @@ comments:
     #  order: -2
 
 # Disqus
+# For more information: https://disqus.com
 disqus:
   enable: false
   shortname:
   count: true
 
 # DisqusJS
-# Alternative Disqus - Render comment component using Disqus API.
-# Demo: https://suka.js.org/DisqusJS/
-# For more information: https://github.com/SukkaW/DisqusJS
+# For more information: https://disqusjs.skk.moe
 disqusjs:
   enable: false
-  # API Endpoint of Disqus API (https://disqus.com/api/).
+  # API Endpoint of Disqus API (https://disqus.com/api/docs/).
   # Leave api empty if you are able to connect to Disqus API. Otherwise you need a reverse proxy for it.
   # For example:
   # api: https://disqus.skk.moe/disqus/
@@ -601,35 +595,18 @@ disqusjs:
   shortname: # See: https://disqus.com/admin/settings/general/
 
 # Changyan
+# For more information: https://changyan.kuaizhan.com
 changyan:
   enable: false
   appid:
   appkey:
-
-# Valine
-# For more information: https://valine.js.org, https://github.com/xCss/Valine
-valine:
-  enable: false
-  appId: # Your leancloud application appid
-  appKey: # Your leancloud application appkey
-  serverURLs: # When the custom domain name is enabled, fill it in here
-  placeholder: Just go go # Comment box placeholder
-  avatar: mm # Gravatar style
-  meta: [nick, mail, link] # Custom comment header
-  pageSize: 10 # Pagination size
-  lang: # Language, available values: en, zh-cn
-  visitor: false # Article reading statistic
-  comment_count: true # If false, comment count will only be displayed in post page, not in home page
-  recordIP: false # Whether to record the commenter IP
-  enableQQ: false # Whether to enable the Nickname box to automatically get QQ Nickname and QQ Avatar
-  requiredFields: [] # Set required fields: [nick] | [nick, mail]
 
 # LiveRe comments system
 # You can get your uid from https://livere.com/insight/myCode (General web site)
 livere_uid: # <your_uid>
 
 # Gitalk
-# For more information: https://gitalk.github.io, https://github.com/gitalk/gitalk
+# For more information: https://gitalk.github.io
 gitalk:
   enable: false
   github_id: # GitHub repo owner
@@ -638,10 +615,26 @@ gitalk:
   client_secret: # GitHub Application Client Secret
   admin_user: # GitHub repo owner and collaborators, only these guys can initialize gitHub issues
   distraction_free_mode: true # Facebook-like distraction free mode
+  # When the official proxy is not available, you can change it to your own proxy address
+  proxy: https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token # This is official proxy adress
   # Gitalk's display language depends on user's browser or system environment
   # If you want everyone visiting your site to see a uniform language, you can set a force language value
   # Available values: en | es-ES | fr | ru | zh-CN | zh-TW
   language:
+
+# Utterances
+# For more information: https://utteranc.es
+utterances:
+  enable: false
+  repo: # Github repository name
+  # Available values: pathname | url | title | og:title
+  issue_term: pathname
+  # Available values: github-light | github-dark | preferred-color-scheme | github-dark-orange | icy-dark | dark-blue | photon-dark | boxy-light
+  theme: github-light
+
+# Isso
+# For more information: https://posativ.org/isso/
+isso: # <data_isso>
 
 
 # ---------------------------------------------------------------
@@ -667,6 +660,7 @@ add_this_id:
 # ---------------------------------------------------------------
 
 # Google Analytics
+# See: https://analytics.google.com
 google_analytics:
   tracking_id: # <app_id>
   # By default, NexT will load an external gtag.js script on your site.
@@ -674,18 +668,19 @@ google_analytics:
   only_pageview: false
 
 # Baidu Analytics
+# See: https://tongji.baidu.com
 baidu_analytics: # <app_id>
 
 # Growingio Analytics
+# See: https://www.growingio.com
 growingio_analytics: # <project_id>
 
-# CNZZ count
-cnzz_siteid:
+# Cloudflare Web Analytics
+# See: https://www.cloudflare.com/web-analytics/
+cloudflare_analytics:
 
 # Show number of visitors of each article.
-# You can visit https://leancloud.cn to get AppID and AppKey.
-# AppID and AppKey are recommended to be the same as valine's for counter compatibility.
-# Warning: Do not enable both `valine.visitor` and `leancloud_visitors`.
+# You can visit https://www.leancloud.cn to get AppID and AppKey.
 leancloud_visitors:
   enable: false
   app_id: # <your app id>
@@ -707,7 +702,7 @@ firestore:
   projectId: # Required
 
 # Show Views / Visitors of the website / page with busuanzi.
-# Get more information on http://ibruce.info/2015/04/04/busuanzi
+# For more information: http://ibruce.info/2015/04/04/busuanzi/
 busuanzi_count:
   enable: false
   total_visitors: true
@@ -744,30 +739,40 @@ local_search:
   # Preload the search data when the page loads.
   preload: false
 
-# Swiftype Search API Key
-swiftype_key:
-
 
 # ---------------------------------------------------------------
 # Chat Services
 # See: https://theme-next.js.org/docs/third-party-services/chat-services
 # ---------------------------------------------------------------
 
+# A button to open designated chat widget in sidebar.
+# Firstly, you need to enable and configure the chat service.
+chat:
+  enable: false
+  icon: fa fa-comment # Icon name in Font Awesome, set false to disable icon.
+  text: Chat # Button text, change it as you wish.
+
 # Chatra Support
-# See: https://chatra.io
+# For more information: https://chatra.com
 # Dashboard: https://app.chatra.io/settings/general
 chatra:
   enable: false
   async: true
   id: # Visit Dashboard to get your ChatraID
-  #embed: # Unfinished experimental feature for developers. See: https://chatra.io/help/api/#injectto
+  #embed: # Unfinished experimental feature for developers. See: https://chatra.com/help/api/#injectto
 
 # Tidio Support
-# See: https://www.tidiochat.com
-# Dashboard: https://www.tidiochat.com/panel/dashboard
+# For more information: https://www.tidio.com
+# Dashboard: https://www.tidio.com/panel/dashboard
 tidio:
   enable: false
-  key: # Public Key, get it from dashboard. See: https://www.tidiochat.com/panel/settings/developer
+  key: # Public Key, get it from dashboard. See: https://www.tidio.com/panel/settings/developer
+
+# Gitter Support
+# For more information: https://gitter.im
+gitter:
+  enable: false
+  room:
 
 
 # ---------------------------------------------------------------
@@ -775,11 +780,11 @@ tidio:
 # See: https://theme-next.js.org/docs/tag-plugins/
 # ---------------------------------------------------------------
 
-# Note tag (bs-callout)
+# Note tag (bootstrap callout)
 note:
   # Note tag style values:
-  #  - simple    bs-callout old alert style. Default.
-  #  - modern    bs-callout new (v2-v3) alert style.
+  #  - simple    bootstrap callout old alert style. Default.
+  #  - modern    bootstrap callout new (v2-v3) alert style.
   #  - flat      flat callout style with background, like on Mozilla or StackOverflow.
   #  - disabled  disable all CSS styles import of note tag.
   style: simple
@@ -791,7 +796,7 @@ note:
 # Tabs tag
 tabs:
   transition:
-    tabs: true
+    tabs: false
     labels: true
 
 # PDF tag
@@ -799,7 +804,7 @@ tabs:
 # So, you have to install the dependency of pdf.js if you want to use pdf tag and make it available to all browsers.
 # Dependencies: https://github.com/next-theme/theme-next-pdf
 pdf:
-  enable: false
+  enable: true
   # Default height
   height: 500px
 
@@ -829,28 +834,31 @@ motion:
     sidebar: fadeInUp
 
 # Progress bar in the top during page loading.
-# For more information: https://github.com/rstacruz/nprogress
-nprogress:
-  enable: true
-  spinner: true
+# For more information: https://github.com/CodeByZach/pace
+pace:
+  enable: false
+  # All available colors:
+  # black | blue | green | orange | pink | purple | red | silver | white | yellow
+  color: blue
+  # All available themes:
+  # big-counter | bounce | barber-shop | center-atom | center-circle | center-radar | center-simple
+  # corner-indicator | fill-left | flat-top | flash | loading-bar | mac-osx | material | minimal
+  theme: minimal
 
 # Canvas ribbon
 # For more information: https://github.com/hustcc/ribbon.js
 canvas_ribbon:
-  enable: true
+  enable: false
   size: 300 # The width of the ribbon
   alpha: 0.6 # The transparency of the ribbon
   zIndex: -1 # The display level of the ribbon
 
 
-#! ==============================================================
-#! DO NOT EDIT THE FOLLOWING SETTINGS
-#! UNLESS YOU KNOW WHAT YOU ARE DOING
-#! See: https://theme-next.js.org/docs/advanced-settings/vendors
-#! ==============================================================
+# ---------------------------------------------------------------
+# CDN Settings
+# See: https://theme-next.js.org/docs/advanced-settings/vendors
+# ---------------------------------------------------------------
 
-# It's recommended to use the same version as in `_vendors.yml` to avoid potential problems.
-# Remember to use the https protocol of CDN links when you enable https on your site.
 vendors:
   # The CDN provider of NexT internal scripts.
   # Available values: local | jsdelivr | unpkg | cdnjs
@@ -861,90 +869,8 @@ vendors:
   # Dependencies for `plugins: local`: https://github.com/next-theme/plugins
   plugins: jsdelivr
 
-  # In the following settings, you can specify the CDN link for each plugin.
-  # If left blank, the default CDN provider set by `plugins` option will be used.
-
-  # Anime.js
-  # For more information: https://animejs.com
-  anime:
-
-  # Font Awesome
-  # For more information: https://fontawesome.com
-  fontawesome:
-
-  # Prism
-  prism:
-  prism_autoloader:
-  prism_line_numbers:
-
-  # MathJax
-  mathjax:
-
-  # KaTeX
-  katex:
-  copy_tex_js:
-  copy_tex_css:
-
-  # Pjax
-  pjax:
-
-  # FancyBox
-  jquery:
-  fancybox_js:
-  fancybox_css:
-
-  # Medium-zoom
-  mediumzoom:
-
-  # Lazyload
-  lazyload:
-
-  # Pangu
-  pangu:
-
-  # Quicklink
-  quicklink:
-      enable: true
-      home: true
-      archive: true
-      delay: true
-      timeout: 3000
-      priority: true
-      ignores:
-  # DisqusJS
-  disqusjs_js:
-  disqusjs_css:
-
-  # Valine
-  valine:
-
-  # Gitalk
-  gitalk_js:
-  gitalk_css:
-
-  # Firebase
-  firebase_app:
-  firebase_firestore:
-
-  # Algolia Search
-  algolia_search:
-  instant_search:
-
-  # Mermaid
-  mermaid:
-
-  # Animate.css
-  # Warning: motion won't work with animate.css version 3.2.0 or later
-  animate_css:
-
-  # NProgress.js
-  nprogress_js:
-  nprogress_css:
-
-  # Canvas ribbon
-  canvas_ribbon:
-
 # Assets
+# Accelerate delivery of static files using a CDN
 css: css
 js: js
 images: images

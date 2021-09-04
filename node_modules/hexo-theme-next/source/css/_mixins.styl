@@ -70,7 +70,7 @@ disable-user-select() {
 sidebar-inline-links-item() {
   margin: 5px 0 0;
 
-  a, span.exturl {
+  a {
     box-sizing: border-box;
     display: inline-block;
     max-width: 100%;
@@ -122,7 +122,7 @@ main-container() {
 
 sidebar-toggle-position($reverse = false) {
   $condition = hexo-config('sidebar.position') == 'right';
-  if (($scheme == 'Muse') || ($scheme == 'Mist')) {
+  if (($scheme == 'Muse') or ($scheme == 'Mist')) {
     $condition = $condition == $reverse;
   }
   if ($condition) {
@@ -217,5 +217,33 @@ toggle-close($position) {
       top: -5px;
       transform: rotate(-45deg);
     }
+  }
+}
+
+site-nav-hide-by-default() {
+  --scroll-height: 0;
+  height: 0;
+  overflow: hidden;
+  transition: height $transition-ease;
+
+  body:not(.site-nav-on) & .animated {
+    animation: none;
+  }
+
+  body.site-nav-on & {
+    height: var(--scroll-height);
+  }
+}
+
+button($color) {
+  background: transparent;
+  color: $color;
+  cursor: pointer;
+  line-height: 2;
+  padding: 0 15px;
+
+  &:hover {
+    background: $color;
+    color: white;
   }
 }

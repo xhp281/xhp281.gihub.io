@@ -5,7 +5,7 @@
   {# Gallery support #}
   {{ post_gallery(post.photos) }}
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="{{ post.lang or config.language }}">
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="{{ post.lang }}">
     <link itemprop="mainEntityOfPage" href="{{ post.permalink }}">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -30,14 +30,14 @@
             {%- endif %}
             {%- set postTitleIcon = '<i class="fa fa-external-link-alt"></i>' %}
             {%- set postText = post.title or post.link %}
-            {{ next_url(post.link, postText + postTitleIcon, {class: 'post-title-link post-title-link-external', itemprop: 'url'}) }}
+            {{- next_url(post.link, postText + postTitleIcon, {class: 'post-title-link post-title-link-external', itemprop: 'url'}) }}
           {% elif is_index %}
             {%- if post.sticky > 0 %}
               <span class="post-sticky-flag" title="{{ __('post.sticky') }}">
                 <i class="fa fa-thumbtack"></i>
               </span>
             {%- endif %}
-            {{ next_url(post.path, post.title or __('post.untitled'), {class: 'post-title-link', itemprop: 'url'}) }}
+            {{- next_url(post.path, post.title or __('post.untitled'), {class: 'post-title-link', itemprop: 'url'}) }}
           {%- else %}
             {{- post.title }}
             {{- post_edit(post.source) }}
@@ -107,7 +107,7 @@
           {{ partial('_partials/post/post-reward.njk') }}
         {%- endif %}
 
-        {%- if theme.creative_commons.license and theme.creative_commons.post %}
+        {%- if theme.creative_commons.license and theme.creative_commons.post and post.copyright !== false %}
           {{ partial('_partials/post/post-copyright.njk') }}
         {%- endif %}
 

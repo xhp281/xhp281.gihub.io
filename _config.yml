@@ -5,16 +5,15 @@
 # Site
 title: zoro's note
 subtitle: '学习笔记，查缺补漏'
-description: '三刀流跟三把刀不是一回事'
-keywords: iOS 程序员 逆向 技术博客
+description: '三刀流和拿三把刀，是不一样的。'
+keywords: iOS Objective-C Swift Flutter 程序员 底层原理 
 author: zoro
 language: zh-CN
 timezone: ''
 
 # URL
-## If your site is put in a subdirectory, set url as 'http://example.com/child' and root as '/child/'
+## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
 url: http://example.com
-root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -98,14 +97,12 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
+# theme: landscape
 theme: next
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-    repository: https://github.com/xhp281/xhp281.github.io
-    branch: main
-#type: git
-#  repository: https://github.com/godweiyang/godweiyang.github.io
-#  branch: master
+  repository: https://github.com/xhp281/xhp281.github.io
+  branch: main

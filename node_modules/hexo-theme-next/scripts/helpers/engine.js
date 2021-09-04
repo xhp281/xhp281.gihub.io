@@ -18,14 +18,53 @@ hexo.extend.helper.register('next_inject', function(point) {
 hexo.extend.helper.register('next_js', function(file, pjax = false) {
   const { next_version } = this;
   const { internal } = this.theme.vendors;
+  const minified_file = file.endsWith('.js') && !file.endsWith('.min.js') ? file.slice(0, -3) + '.min.js' : file;
   const links = {
     local   : this.url_for(`${this.theme.js}/${file}`),
-    jsdelivr: `//cdn.jsdelivr.net/npm/hexo-theme-next@${next_version}/source/js/${file}`,
-    unpkg   : `//unpkg.com/hexo-theme-next@${next_version}/source/js/${file}`,
-    cdnjs   : `//cdnjs.cloudflare.com/ajax/libs/hexo-theme-next/${next_version}/${file}`
+    jsdelivr: `https://cdn.jsdelivr.net/npm/hexo-theme-next@${next_version}/source/js/${minified_file}`,
+    unpkg   : `https://unpkg.com/hexo-theme-next@${next_version}/source/js/${file}`,
+    cdnjs   : `https://cdnjs.cloudflare.com/ajax/libs/hexo-theme-next/${next_version}/${minified_file}`
   };
   const src = links[internal] || links.local;
   return `<script ${pjax ? 'data-pjax ' : ''}src="${src}"></script>`;
+});
+
+hexo.extend.helper.register('next_vendors', function(name) {
+  const { url, integrity } = this.theme.vendors[name];
+  const type = url.endsWith('css') ? 'css' : 'js';
+  if (type === 'css') {
+    if (integrity) return `<link rel="stylesheet" href="${url}" integrity="${integrity}" crossorigin="anonymous">`;
+    return `<link rel="stylesheet" href="${url}">`;
+  }
+  if (integrity) return `<script src="${url}" integrity="${integrity}" crossorigin="anonymous"></script>`;
+  return `<script src="${url}"></script>`;
+});
+
+hexo.extend.helper.register('next_data', function(name, ...data) {
+  const json = data.length === 1 ? data[0] : Object.assign({}, ...data);
+  return `<script class="next-config" data-name="${name}" type="application/json">${
+    JSON.stringify(json).replace(/</g, '\\u003c')
+  }</script>`;
+});
+
+hexo.extend.helper.register('next_pre', function() {
+  const { preconnect } = this.theme;
+  if (!preconnect) return '';
+  const { enable, host } = this.theme.font;
+  const { internal, plugins } = this.theme.vendors;
+  const links = {
+    local   : '',
+    jsdelivr: 'https://cdn.jsdelivr.net',
+    unpkg   : 'https://unpkg.com',
+    cdnjs   : 'https://cdnjs.cloudflare.com'
+  };
+  const h = enable ? host || 'https://fonts.googleapis.com' : '';
+  const i = links[internal];
+  const p = links[plugins];
+  const results = [...new Set([h, i, p].filter(origin => origin))].map(
+    origin => `<link rel="preconnect" href="${origin}" crossorigin>`
+  );
+  return results.join('\n');
 });
 
 hexo.extend.helper.register('post_gallery', function(photos) {
@@ -40,9 +79,9 @@ hexo.extend.helper.register('post_gallery', function(photos) {
 });
 
 hexo.extend.helper.register('post_edit', function(src) {
-  const { theme } = this;
-  if (!theme.post_edit.enable) return '';
-  return this.next_url(theme.post_edit.url + src, '<i class="fa fa-pen-nib"></i>', {
+  const { post_edit } = this.theme;
+  if (!post_edit.enable) return '';
+  return this.next_url(post_edit.url + src, '<i class="fa fa-pen-nib"></i>', {
     class: 'post-edit-link',
     title: this.__('post.edit')
   });

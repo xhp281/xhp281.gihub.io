@@ -1,5 +1,6 @@
 .sidebar {
   margin-top: $sidebar-offset;
+  // https://caniuse.com/css-sticky
   position: -webkit-sticky;
   position: sticky;
   top: $sidebar-offset;
@@ -9,7 +10,7 @@
     display: none;
   }
 
-  if (hexo-config('motion.enable') && hexo-config('motion.transition.sidebar')) {
+  if (hexo-config('motion.enable') and hexo-config('motion.transition.sidebar')) {
     visibility: hidden;
   }
 }
@@ -34,19 +35,16 @@
   border-bottom: 1px dotted $grey-light;
   border-top: 1px dotted $grey-light;
 
-  a {
+  button {
     border: 0;
     color: $orange;
     display: block;
+    width: 100%;
 
     &:hover {
       background: none;
       border: 0;
       color: darken($orange, 20%);
-
-      .fa, .fab, .far, .fas {
-        color: darken($orange, 20%);
-      }
     }
   }
 }
@@ -58,12 +56,12 @@
 .links-of-author-item {
   sidebar-inline-links-item();
 
-  if (!hexo-config('social_icons.icons_only')) {
+  if (not hexo-config('social_icons.icons_only')) {
     width: 50%;
   }
 
-  a, span.exturl {
-    border-bottom: none;
+  a {
+    border-bottom: 0;
     border-radius: 4px;
     display: block;
 
