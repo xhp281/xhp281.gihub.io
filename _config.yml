@@ -104,5 +104,5 @@ theme: next
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repository: https://github.com/xhp281/xhp281.github.io
+  repo: https://github.com/xhp281/xhp281.github.io
   branch: main
