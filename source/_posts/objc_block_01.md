@@ -1,11 +1,16 @@
+
+
+
+
 title: Block本质
 categories:
+
   - objc
 tags:
   - Block
 date: 2021-11-23 14:50:18
 ---
-### Block本质
+## Block本质
 > 1、Block本质是一个对象，内部有一个isa指针
 > 2、封装了函数调用以及函数调用环境的OC对象
 
@@ -136,8 +141,109 @@ struct __block_impl {
 ```
 通过上述代码可以发现，block 调用是通过 `block` 找到 `FuncPtr` 直接调用，通上面分析可以明确 block 执行的是 __main_block_impl_0 类型的结构体，但是在 `__main_block_impl_0` 内部并不能直接找到 `FuncPtr`，`FuncPtr` 是存在 `__block_impl` 中的。
 
-`block` 可以直接调用 `__block_impl` 中的 `FuncPtr`原因，通过查看上述源码可以发现，`(__block_impl *)` 将 block 强制转换为了 `__block_impl` 类型，因为 `__block_impl` 是block的
 
-```bash
-npm install -g hexo
+
+`block` 可以直接调用 `__block_impl` 中的 `FuncPtr`原因，通过查看上述源码可以发现，`(__block_impl *)` 将 block 强制转换为了 `__block_impl` 类型，因为 `__block_impl` 是 `__main_block_impl_0` 结构体的第一个成员，相当于将 `__block_impl` 结构体的成员拿出来直接放在 `__main_block_impl_0` 中，也就说明 `__block_impl` 的内存地址就是 `__main_block_impl_0` 结构体内存地址的开头。所以可以转换成功，并找到 `FuncPtr` 成员。
+
+
+
+通过上述可以知道，`FuncPtr` 存储着代码块的函数地址，调用此函数就会执行代码块中的代码，回头查看 `__main_block_func_0` ，可以发现第一个参数就是 `__main_block_impl_0` 类型的指针。也就是说将 `block` 传入 `__main_block_func_0` 函数中，便于从中捕获 `block` 的值。
+
+
+
+#### 验证block的本质确实是 __main_block_impl_0 结构体类型
+
+通过代码证明一下上述内容：通用使用之前的方法，我们按照上面分析block内部结构自定义结构体，并将block内部的结构体强制转换为自定义的结构体，转换成功说明底层结构体确实如之前分析的一样。
+
+```objc
+struct __block_impl {
+  void *isa;
+  int Flags;
+  int Reserved;
+  void *FuncPtr;
+};
+
+struct __main_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+};
+
+struct __main_block_impl_0 {
+  struct __block_impl impl;
+  struct __main_block_desc_0* Desc;
+  int age;
+};
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+         int age = 10; // 默认是 auto 类型变量
+         void(^block)(int, int) = ^(int a, int b){
+             NSLog(@"this is block a = %d, b = %d", a, b);
+             NSLog(@"this is block, age = %d",age);
+         };
+        // 进行类型转换
+        struct __main_block_impl_0 *blockStruct = (__bridge struct __main_block_impl_0 *)block;
+         block(2,1);
+    }
+    return 0;
+}
 ```
+
+通过xcode断点可以看出自定义结构体可以被成功赋值。
+
+ ![block_自定义构体验证](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E8%87%AA%E5%AE%9A%E4%B9%89%E6%9E%84%E4%BD%93%E9%AA%8C%E8%AF%81.jpeg)
+
+接下来断点来到block代码块中，看下对战信息中心的函数调用地址。`Debug -> Debug workflow -> always show Disassembly` 。
+
+ ![block_自定义构体验证_汇编](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E8%87%AA%E5%AE%9A%E4%B9%89%E6%9E%84%E4%BD%93%E9%AA%8C%E8%AF%81_%E6%B1%87%E7%BC%96.jpeg)
+
+通过上图可以看到 `block` 的地址确实和 `FuncPtr` 的地址是一样的。
+
+### 总结
+
+通过上述分析已经对block底层有了一个基本认识，将上述代码转换为一张图片看下具体的关系。
+
+![](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E7%BB%93%E6%9E%84%E4%BD%93%E5%85%B3%E7%B3%BB%E5%9B%BE.png)
+
+block的底层数据可以通过一张图来展示
+
+![block_底层数据结构](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.png)
+
+## block变量的捕获
+
+为了保证block内部能正常访问外部的变量，block有一个变量捕获机制。
+
+### 局部变量
+
+#### auto变量
+
+上述代码中已经了解过block对age变量的捕获。auto自动变量，离开作用域就销毁，通知局部变量签名自动添加auto关键字。自动变量会捕获到block内部，也就是说block会专门新增一个参数来存储变量的值。auto只存在于局部变量中，访问方式为值传递，通过上述对age参数额解释，我们也可以确定确实是值传递。
+
+#### static变量
+
+static修饰的变量为指针传递，同样会被block捕获。
+
+接下来分别添加auto修饰的局部变量和static修饰的局部变量，通过源码查看下他们的区别。
+
+```objc
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        auto int a = 66;
+        static int b = 99;
+        void(^block)(void) = ^{
+            NSLog(@"this is block a = %d, b = %d", a, b);
+        };
+        a = 88;
+        b = 77;
+        block();
+    }
+    return 0;
+}
+// log：this is block a = 66, b = 77
+// block中a的值并没有被改变，b的值被改变了
+```
+
+将源码转换成c++代码之后的两个参数的区别如下图：
+
+![](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E4%B8%8D%E5%90%8C%E5%8F%98%E9%87%8F%E6%8D%95%E8%8E%B7%E7%9A%84%E5%8C%BA%E5%88%AB.jpeg)
+
