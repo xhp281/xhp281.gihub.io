@@ -287,3 +287,130 @@ int main(int argc, const char * argv[]) {
 |      全局变量      |        ❌        | 直接访问 |
 
 **总结：局部变量都会被block捕获，自动变量是值捕获，静态变量是地址捕获，全局变量则不会被捕获。**
+
+#### 疑问：以下代码中block是否会捕获变量呢？
+
+1、在block中使用self会不会被捕获？
+
+```objc
+#import "Person.h"
+@implementation Person
+- (void)test {
+    void(^block)(void) = ^{
+        NSLog(@"%@",self);
+    };
+    block();
+}
+- (instancetype)initWithName:(NSString *)name {
+    if (self = [super init]) {
+        self.name = name;
+    }
+    return self;
+}
++ (void) test2 {
+    NSLog(@"类方法test2");
+}
+@end
+```
+
+同样转化为c++代码查看其内部结构
+
+![block_捕获_示例代码](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E6%8D%95%E8%8E%B7_%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81.jpg)
+
+上图中可以发现，self同样被block捕获，通过test方法发可以发现，test方法默认传递了两个参数self和_cmd。类方法test也是同样的。
+
+不论对象方法还是类方法都会默认将self作为参数传递给方法内部，既然是作为参数传入，那么self肯定是局部变量。局部变量肯定会被block捕获。
+
+2、在block中使用成员变量或者调用实例的属性会有什么不同的结果？
+
+```objc
+- (void)test {
+    void(^block)(void) = ^{
+        NSLog(@"%@",self.name);
+        NSLog(@"%@",_name);
+    };
+    block();
+}
+```
+
+![block_自定义对象属性和成员变量](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E8%87%AA%E5%AE%9A%E4%B9%89%E5%AF%B9%E8%B1%A1%E5%B1%9E%E6%80%A7%E5%92%8C%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F.jpg)
+
+通过上面图片可以发现，即使block中使用的是实例对象的属性，block中捕获的仍然是实例对象，并通过实例对象通过不同的方式去获取使用到的属性。
+
+### block的类型
+
+block对象是什么类型的，之前的代码中提到过，通过源码可以知道block中的isa指针指向的是 `_NSConcreteStackBlock` 类对象地址。那么block的类型是否就是 `_NSConcreteStackBlock`类型吗？
+
+通过代码调用class方法或者isa指针查看具体类型。
+
+```objc
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        void (^block)(void) = ^{
+            NSLog(@"Hello");
+        };
+        
+        NSLog(@"%@", [block class]);
+        NSLog(@"%@", [[block class] superclass]);
+        NSLog(@"%@", [[[block class] superclass] superclass]);
+        NSLog(@"%@", [[[[block class] superclass] superclass] superclass]);
+    }
+    return 0;
+}
+// log： __NSGlobalBlock__ : __NSGlobalBlock : NSBlock : NSObject
+```
+
+从上述打印内容可以看出block最终都是继承自NSBlock类型，而NSBlock继承于NSObjcet。那么block其中的isa指针其实是来自NSObject中的。证明了block的本质其实就是OC对象。
+
+#### block的3种类型
+
+block有3中类型
+
+```objective-c
+__NSGlobalBlock__ （ _NSConcreteGlobalBlock ）
+__NSStackBlock__  （ _NSConcreteStackBlock ）
+__NSMallocBlock__ （ _NSConcreteMallocBlock ）
+```
+
+通过代码查看一下block在什么情况下其类型会各不相同
+
+```objc
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        // 1. 内部没有调用外部变量的block
+        void (^block1)(void) = ^{
+            NSLog(@"Hello");
+        };
+        // 2. 内部调用外部变量的block
+        int a = 10;
+        void (^block2)(void) = ^{
+            NSLog(@"Hello - %d",a);
+        };
+       // 3. 直接调用的block的class
+        NSLog(@"%@ %@ %@", [block1 class], [block2 class], [^{
+            NSLog(@"%d",a);
+        } class]);
+    }
+    return 0;
+} 
+```
+
+通过打印内容确实发现block的三种类型
+
+```shell
+__NSGlobalBlock__ __NSMallocBlock__ __NSStackBlock__
+```
+
+上述代码转化为c++代码查看源码时却发现block的类型与打印出来的类型不一样，c++源码中三个block的isa指针全部都指向_NSConcreteStackBlock类型地址。
+
+可以猜测runtime运行时过程中也许对类型进行了转变。最终类型当然以runtime运行时类型也就是我们打印出的类型为准。
+
+#### block的内存中的存储
+
+
+
+上图中可以发现，根据block的类型不同，block存放在不同的区域中。 数据段中的 `__NSGlobalBlock__` 直到程序结束才会被回收，不过我们很少使用到 `__NSGlobalBlock__` 类型的block，因为这样使用block并没有什么意义。
+
+`__NSStackBlock__` 类型的block存放在栈中，我们知道栈中的内存由系统自动分配和释放，作用域执行完毕之后就会被立即释放，而在相同的作用域中定义block并且调用block似乎也多此一举。
+
+#### block的如何定义其类型
