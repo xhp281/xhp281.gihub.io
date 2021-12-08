@@ -407,10 +407,108 @@ __NSGlobalBlock__ __NSMallocBlock__ __NSStackBlock__
 
 #### block的内存中的存储
 
-
+![block_不同block的存放区域](/Users/xhp281/Documents/%E7%AC%94%E8%AE%B0/iOS/blog_imags/block/block_%E4%B8%8D%E5%90%8Cblock%E7%9A%84%E5%AD%98%E6%94%BE%E5%8C%BA%E5%9F%9F.png)
 
 上图中可以发现，根据block的类型不同，block存放在不同的区域中。 数据段中的 `__NSGlobalBlock__` 直到程序结束才会被回收，不过我们很少使用到 `__NSGlobalBlock__` 类型的block，因为这样使用block并没有什么意义。
 
 `__NSStackBlock__` 类型的block存放在栈中，我们知道栈中的内存由系统自动分配和释放，作用域执行完毕之后就会被立即释放，而在相同的作用域中定义block并且调用block似乎也多此一举。
 
+`__NSMallocBlock__` 是在平时编码过程中最常使用到的。存放在堆中需要我们自己进行内存管理。
+
 #### block的如何定义其类型
+
+block是如何定义其类型，依据什么来为block定义不同类型并分配不同的空间呢？首先看下面内容
+
+|    block类型    |           环境            | 内存区域 |
+| :-------------: | :-----------------------: | :------: |
+| _NSGlobalBlock_ |     没有访问auto变量      |  数据段  |
+| _NSStackBlock_  |      访问了auto变量       |    栈    |
+| _NSMallocBlock_ | _NSStackBlock_ 调用了copy |    堆    |
+
+接着我们使用代码验证上述问题，首先关闭ARC回到MRC环境下，因为ARC会帮助我们做很多事情，可能会影响我们的观察。
+
+```objc
+// MRC环境！！！
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        // Global：没有访问auto变量：__NSGlobalBlock__
+        void (^block1)(void) = ^{
+            NSLog(@"block1---------");
+        };
+        
+        // Stack：访问了auto变量： __NSStackBlock__
+        int a = 10;
+        void (^block2)(void) = ^{
+            NSLog(@"block2---------%d", a);
+        };
+        
+        NSLog(@"%@ %@", [block1 class], [block2 class]);
+        
+        // __NSStackBlock__调用copy ： __NSMallocBlock__
+        NSLog(@"%@", [[block2 copy] class]);
+    }
+    return 0;
+}
+// log: __NSGlobalBlock__ __NSStackBlock__ __NSMallocBlock__
+```
+
+通过打印的内容可以发现：
+
+1.**没有访问auto变量的block是 `__NSGlobalBlock__` 类型的，存放在数据段中。**
+
+2.**访问了auto变量的block是 `__NSStackBlock__` 类型的，存放在栈中。**
+
+3.**`__NSStackBlock__` 类型的block调用copy成为 `__NSMallocBlock__` 类型并被复制存放在堆中。**
+
+上面提到过 `__NSGlobalBlock__` 类型的我们很少使用到，因为如果不需要访问外界的变量，直接通过函数实现就可以了，不需要使用block。
+
+但是 `__NSStackBlock__` 访问了auto变量，并且是存放在栈中的，上面提到过，栈中的代码在作用域结束之后内存就会被销毁，那么我们很有可能block内存销毁之后才去调用他，那样就会发生问题，通过下面代码可以证实这个问题。
+
+```objc
+void (^block)(void);
+void test() {
+    // __NSStackBlock__
+    int a = 10;
+    block = ^{
+        NSLog(@"block---------%d", a);
+    };
+}
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        test();
+        block();
+    }
+    return 0;
+}
+// log: block---------68334376
+```
+
+可以发现a的值变为了不可控的一个数字。因为上述代码中创建的block是 `__NSStackBlock__` 类型的，因此block是存储在栈中的，那么当test函数执行完毕之后，栈内存中block所占用的内存已经被系统回收，因此就有可能出现乱得数据。查看其c++代码可以更清楚的理解。
+
+![block_栈内存被回收](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E6%A0%88%E5%86%85%E5%AD%98%E8%A2%AB%E5%9B%9E%E6%94%B6.png)
+
+为了避免这种情况发生，可以通过copy将 __NSStackBlock__ 类型的block转化为 __NSMallocBlock__ 类型的block，将block存储在堆中，以下是修改后的代码。
+
+```objc
+void (^block)(void);
+void test()
+{
+    // __NSStackBlock__ 调用copy 转化为__NSMallocBlock__
+    int age = 10;
+    block = [^{
+        NSLog(@"block---------%d", age);
+    } copy];
+    [block release];
+}
+// log: block---------10
+```
+
+那么其他类型的block调用copy会改变block类型吗？下面表格已经展示的很清晰了。
+
+|    block类型    | 内存区域 |                 copy效果                 |
+| :-------------: | :------: | :--------------------------------------: |
+| _NSGlobalBlock_ |  数据段  |          什么都不做，不改变类型          |
+| _NSStackBlock_  |    栈    | 从栈赋值到堆，改变类型为 _NSMallocBlock_ |
+| _NSMallocBlock_ |    堆    |         引用计数增加，不改变类型         |
+
+所以在平时开发过程中MRC环境下经常需要使用copy来保存block，将栈上的block拷贝到堆中，即使栈上的block被销毁，堆上的block也不会被销毁，需要我们自己调用release操作来销毁。而在ARC环境下系统会自动调用copy操作，使block不会被销毁。
