@@ -209,17 +209,17 @@ block的底层数据可以通过一张图来展示
 
 ![block_底层数据结构](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.png)
 
-## block变量的捕获
+### block变量的捕获
 
 为了保证block内部能正常访问外部的变量，block有一个变量捕获机制。
 
-### 局部变量
+#### 局部变量
 
-#### auto变量
+##### auto变量
 
 上述代码中已经了解过block对age变量的捕获。auto自动变量，离开作用域就销毁，通常局部变量前面自动添加 `auto` 关键字。自动变量会捕获到block内部，也就是说block会专门新增一个参数来存储变量的值。`auto` 只存在于局部变量中，访问方式为值传递，通过上述对age参数额解释，我们也可以确定确实是值传递。
 
-#### static变量
+##### static变量
 
 static修饰的变量为指针传递，同样会被block捕获。
 
@@ -251,7 +251,7 @@ int main(int argc, const char * argv[]) {
 
 这两种变量产生差异的原因是，自动变量可能会销毁，block执行的时候自动变量有可能已经被销毁了，那么此时再去访问被销毁的地址肯定会发生坏的内存访问，因此对于自动变量一定是值传递而不是指针传递。而静态变量不会被销毁，所以完全可以传递地址。因为传递的是值的地址，所以block调用之前修改地址中保存的值，block中的地址是不会变的，所以值会随之改变。
 
-### 全局变量
+#### 全局变量
 
 示例代码：
 
@@ -288,7 +288,7 @@ int main(int argc, const char * argv[]) {
 
 **总结：局部变量都会被block捕获，自动变量是值捕获，静态变量是地址捕获，全局变量则不会被捕获。**
 
-#### 疑问：以下代码中block是否会捕获变量呢？
+##### 疑问：以下代码中block是否会捕获变量呢？
 
 1、在block中使用self会不会被捕获？
 
@@ -512,3 +512,173 @@ void test()
 | _NSMallocBlock_ |    堆    |         引用计数增加，不改变类型         |
 
 所以在平时开发过程中MRC环境下经常需要使用copy来保存block，将栈上的block拷贝到堆中，即使栈上的block被销毁，堆上的block也不会被销毁，需要我们自己调用release操作来销毁。而在ARC环境下系统会自动调用copy操作，使block不会被销毁。
+
+### ARC帮我们做了什么
+
+在ARC环境下，编译器会根据情况自动将栈上的block进行一次copy操作，将block复制到堆上。
+
+**什么情况下ARC会自动将block进行一次copy操作？** （以下代码都在ARC环境下执行）
+
+#### 1. block作为函数返回值时
+
+```objc
+typedef void(^Block)(void);
+Block myblock() {
+    int a = 10;
+    Block block = ^{
+        NSLog(@"----------%d",a);
+    };
+    return block;
+}
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        Block block = myblock();
+        block();
+       // 打印block类型为 __NSMallocBlock__
+        NSLog(@"%@",[block class]);
+    }
+    return 0;
+}
+// log: ----------10 
+// log: __NSMallocBlock__
+```
+
+**上文提到过，如果在block中访问了auto变量时，block的类型为`__NSStackBlock__`，上面打印内容发现blcok为 `__NSMallocBlock__` 类型的，并且可以正常打印出a的值，说明block内存并没有被销毁。**
+
+**block进行copy操作会转化为 `__NSMallocBlock__` 类型，来将block复制到堆中，那么说明RAC在 block作为函数返回值时会自动帮助我们对block进行copy操作，以保存block，并在适当的地方进行release操作。**
+
+#### 2. 将block赋值给__strong指针时
+
+block被强指针引用时，RAC也会自动对block进行一次copy操作。
+
+```objc
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        // block内没有访问auto变量
+        Block block = ^{
+            NSLog(@"block---------");
+        };
+        NSLog(@"%@",[block class]);
+      
+        // block内访问了auto变量，但没有赋值给__strong指针
+        int a = 10;
+        NSLog(@"%@",[^{
+            NSLog(@"block1---------%d", a);
+        } class]);
+      
+        // block赋值给__strong指针
+        Block block2 = ^{
+          NSLog(@"block2---------%d", a);
+        };
+        NSLog(@"%@",[block2 class]);
+    }
+    return 0;
+}
+```
+
+查看打印内容可以看出，当block被赋值给__strong指针时，RAC会自动进行一次copy操作。
+
+```objc
+__NSGlobalBlock__  __NSStackBlock__ __NSMallocBlock__
+```
+
+#### 3. block作为Cocoa API中方法名含有usingBlock的方法参数时
+
+例如：遍历数组的block方法，将block作为参数的时候。
+
+```objc
+NSArray *array = @[];
+[array enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+}];
+```
+
+#### 4. block作为GCD API的方法参数时
+
+例如：GDC的一次性函数或延迟执行的函数，执行完block操作之后系统才会对block进行release操作。
+
+```objc
+static dispatch_once_t onceToken;
+dispatch_once(&onceToken, ^{
+            
+});        
+dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            
+});
+```
+
+### block声明写法
+
+通过上面对MRC及ARC环境下block的不同类型的分析，总结出不同环境下block属性建议写法。
+
+MRC下block属性的建议写法
+
+`@property (copy, nonatomic) void (^block)(void);`
+
+ARC下block属性的建议写法
+
+`@property (strong, nonatomic) void (^block)(void);` 
+
+`@property (copy, nonatomic) void (^block)(void);`
+
+### block对对象变量的捕获
+
+block一般使用过程中都是对对象变量的捕获，那么对象变量的捕获同基本数据类型变量相同吗？
+
+查看一下代码思考：当在block中访问的为对象类型时，对象什么时候会销毁？
+
+```objc
+typedef void (^Block)(void);
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        Block block;
+        {
+            Person *person = [[Person alloc] init];
+            person.name = @"cook";
+            
+            block = ^{
+                NSLog(@"------block内部%@",person.name);
+            };
+        } // 执行完毕，person没有被释放
+        NSLog(@"--------");
+    } // person 释放
+    return 0;
+}
+```
+
+大括号执行完毕之后，`person` 依然不会被释放。`person` 为 `aotu` 变量，传入的 `block` 的变量同样为 `person`，即 `block` 有一个强引用引用 `person`，所以 `block `不被销毁的话，`peroson` 也不会销毁。 查看源代码确实如此
+
+![block_block对对象变量的捕获](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_block%E5%AF%B9%E5%AF%B9%E8%B1%A1%E5%8F%98%E9%87%8F%E7%9A%84%E6%8D%95%E8%8E%B7.png)
+
+将上述代码转移到MRC环境下，在MRC环境下即使block还在，`person` 却被释放掉了。因为MRC环境下block在栈空间，栈空间对外面的 `person` 不会进行强引用。
+
+```objc
+typedef void (^Block)(void);
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        Block block;
+        {
+            Person *person = [[Person alloc] init];
+            person.name = @"cook";
+            
+            block = ^{
+                NSLog(@"------block内部%@",person.name);
+            };
+            [person release];
+        } // 执行完毕，person没有被释放
+        NSLog(@"--------");
+    } // person 释放
+    return 0;
+}
+```
+
+block调用copy操作之后，person不会被释放。
+
+```objc
+block = [^{
+   NSLog(@"------block内部%@",person.name);
+} copy];
+```
+
+上面提到只需要对栈空间的 `block` 进行一次 `copy` 操作，将栈空间的 `block` 拷贝到堆中，`person` 就不会被释放，说明堆空间的 `block` 可能会对 `person` 进行一次 `retain` 操作，保证 `person` 不会被销毁。堆空间的 `block` 自己销毁之后也会对持有的对象进行 `release` 操作。
+
+也就是说栈空间上的 `block` 不会对对象强引用，堆空间的 `block` 有能力持有外部调用的对象，即对对象进行强引用或去除强引用的操作。
