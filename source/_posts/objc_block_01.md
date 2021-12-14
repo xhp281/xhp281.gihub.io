@@ -682,3 +682,45 @@ block = [^{
 上面提到只需要对栈空间的 `block` 进行一次 `copy` 操作，将栈空间的 `block` 拷贝到堆中，`person` 就不会被释放，说明堆空间的 `block` 可能会对 `person` 进行一次 `retain` 操作，保证 `person` 不会被销毁。堆空间的 `block` 自己销毁之后也会对持有的对象进行 `release` 操作。
 
 也就是说栈空间上的 `block` 不会对对象强引用，堆空间的 `block` 有能力持有外部调用的对象，即对对象进行强引用或去除强引用的操作。
+
+### __weak
+
+__weak添加之后，`person  `在作用域执行完毕之后就被销毁了。
+
+```objc
+typedef void (^Block)(void);
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        Block block;
+        {
+            Person *person = [[Person alloc] init];
+            person.name    = @"111";
+            
+            __weak Person *waekPerson = person;
+            block = ^{
+                NSLog(@"------block内部 %@",waekPerson.name);
+            };
+        }
+        NSLog(@"--------");
+    }
+    return 0;
+}
+```
+
+将代码转化为c++来看一下上述代码之间的差别。 __weak修饰变量，需要告知编译器使用ARC环境及版本号否则会报错，添加说明 `-fobjc-arc -fobjc-runtime=ios-8.0.0`
+
+`xcrun -sdk iphoneos clang -arch arm64 -rewrite-objc -fobjc-arc -fobjc-runtime=ios-8.0.0 main.m` 
+
+![block_weak_01](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_weak_01.jpg)
+
+上图可以看出 `__weak` 修饰的变量，在生成的 `__main_block_impl_0` 中也是使用 `__weak` 修饰。
+
+### __main_block_copy_0 和 __main_block_dispose_0
+
+当block中捕获对象类型的变量时，我们发现block结构体 `__main_block_impl_0` 的描述结构体 `__main_block_desc_0` 中多了两个参数 `copy` 和 `dispose` 函数，查看源码：
+
+![block_weak_02](https://xhp281-blog.oss-cn-beijing.aliyuncs.com/ios_objc/block_weak_02.jpg)
+
+`copy` 和 `dispose` 函数中传入的都是 `__main_block_impl_0` 结构体本身。
+
+> `copy ` 本质就是 `__main_block_copy_0` 函数，`__main_block_copy_0 ` 函数内部调用 `_Block_object_assign` 函数，`_Block_object_assign` 中传入的是person对象的地址，person对象，以及 `8`。
